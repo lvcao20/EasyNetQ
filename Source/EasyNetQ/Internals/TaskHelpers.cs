@@ -10,21 +10,18 @@ namespace EasyNetQ.Internals
         {
             return (x, c) =>
             {
-                var tcs = new TaskCompletionSource<T2>();
                 try
                 {
-                    var result = func(x, c);
-                    tcs.SetResult(result);
+                    return Task.FromResult(func(x, c));
                 }
-                catch (OperationCanceledException)
+                catch (OperationCanceledException exception)
                 {
-                    tcs.SetCanceled();
+                    return Task.FromCanceled<T2>(exception.CancellationToken);
                 }
                 catch (Exception exception)
                 {
-                    tcs.SetException(exception);
+                    return Task.FromException<T2>(exception);
                 }
-                return tcs.Task;
             };
         }
 
@@ -32,21 +29,19 @@ namespace EasyNetQ.Internals
         {
             return (x, y, z, c) =>
             {
-                var tcs = new TaskCompletionSource<object>();
                 try
                 {
                     action(x, y, z, c);
-                    tcs.SetResult(null);
+                    return Task.CompletedTask;
                 }
-                catch (OperationCanceledException)
+                catch (OperationCanceledException exception)
                 {
-                    tcs.SetCanceled();
+                    return Task.FromCanceled(exception.CancellationToken);
                 }
                 catch (Exception exception)
                 {
-                    tcs.SetException(exception);
+                    return Task.FromException(exception);
                 }
-                return tcs.Task;
             };
         }
 
@@ -54,21 +49,19 @@ namespace EasyNetQ.Internals
         {
             return (x, y, c) =>
             {
-                var tcs = new TaskCompletionSource<object>();
                 try
                 {
                     action(x, y, c);
-                    tcs.SetResult(null);
+                    return Task.CompletedTask;
                 }
-                catch (OperationCanceledException)
+                catch (OperationCanceledException exception)
                 {
-                    tcs.SetCanceled();
+                    return Task.FromCanceled(exception.CancellationToken);
                 }
                 catch (Exception exception)
                 {
-                    tcs.SetException(exception);
+                    return Task.FromException(exception);
                 }
-                return tcs.Task;
             };
         }
 
@@ -76,59 +69,47 @@ namespace EasyNetQ.Internals
         {
             return (x, c) =>
             {
-                var tcs = new TaskCompletionSource<object>();
                 try
                 {
                     action(x, c);
-                    tcs.SetResult(null);
+                    return Task.CompletedTask;
                 }
-                catch (OperationCanceledException)
+                catch (OperationCanceledException exception)
                 {
-                    tcs.SetCanceled();
+                    return Task.FromCanceled(exception.CancellationToken);
                 }
                 catch (Exception exception)
                 {
-                    tcs.SetException(exception);
+                    return Task.FromException(exception);
                 }
-                return tcs.Task;
             };
         }
 
         public static Task FromCancelled()
         {
-            var tcs = new TaskCompletionSource<object>();
-            tcs.SetCanceled();
-            return tcs.Task;
+            return Task.FromCanceled(CancellationToken.None);
         }
 
         public static Task<T> FromCancelled<T>()
         {
-            var tcs = new TaskCompletionSource<T>();
-            tcs.SetCanceled();
-            return tcs.Task;
+            return Task.FromCanceled<T>(CancellationToken.None);
         }
 
         public static Task FromException(Exception exception)
         {
-            var tcs = new TaskCompletionSource<object>();
-            tcs.SetException(exception);
-            return tcs.Task;
+            return Task.FromException(exception);
         }
 
         public static Task<T> FromException<T>(Exception exception)
         {
-            var tcs = new TaskCompletionSource<T>();
-            tcs.SetException(exception);
-            return tcs.Task;
+            return Task.FromException<T>(exception);
         }
 
         public static Task<T> FromResult<T>(T result)
         {
-            var tcs = new TaskCompletionSource<T>();
-            tcs.SetResult(result);
-            return tcs.Task;
+            return Task.FromResult(result);
         }
 
-        public static Task Completed { get; } = FromResult<object>(null);
+        public static Task Completed { get; } = Task.CompletedTask;
     }
 }
